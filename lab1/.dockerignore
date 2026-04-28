@@ -1,0 +1,3 @@
+# TODO Lab 1: This file is too permissive. Add entries to keep
+# the build context small. Suggestions: __pycache__, .venv, .git,
+# *.pyc, tests/, *.db, .pytest_cache, .vscode, .idea

@@ -1,0 +1,43 @@
+# Lab 2 — Wire up Postgres alongside the API.
+#
+# This compose file has several issues. Fix them so:
+#   docker compose up --build
+# launches both services, the API can reach the DB, and predictions
+# get logged. Verify with:
+#   curl -X POST http://localhost:8000/predict \
+#     -H "Content-Type: application/json" \
+#     -d '{"sepal_length":5.1,"sepal_width":3.5,"petal_length":1.4,"petal_width":0.2}'
+#   curl http://localhost:8000/predictions
+
+services:
+  api:
+    build: .
+    # TODO 1: Map the container's port 8000 to the host's port 8000.
+
+    # TODO 2: Set DATABASE_URL so the API connects to the `db` service.
+    #         Format: postgresql+psycopg2://USER:PASSWORD@HOST:PORT/DBNAME
+    #         The HOST is the service name from this file.
+    # environment:
+    #   DATABASE_URL: ...
+
+    # TODO 3: The API depends on the DB. Without depends_on the API
+    #         will start before the DB is ready and crash on first request.
+    #         Use depends_on with `condition: service_healthy` once the
+    #         db has a healthcheck.
+
+  db:
+    image: postgres:16-alpine
+    # TODO 4: Postgres needs three env vars to bootstrap:
+    #         POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB.
+    #         Add them under `environment:`.
+
+    # TODO 5: Persist the database across `docker compose down` by adding
+    #         a named volume mounted at /var/lib/postgresql/data.
+    #         Don't forget to declare it in the top-level `volumes:` block.
+
+    # TODO 6: Add a healthcheck. Postgres ships with `pg_isready`.
+    #         Example test: ["CMD-SHELL", "pg_isready -U <user> -d <db>"]
+
+# TODO 5 (cont.): Declare the named volume here.
+# volumes:
+#   db_data:

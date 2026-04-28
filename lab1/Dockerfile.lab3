@@ -1,0 +1,40 @@
+# Lab 3 — Optimize the image with a multi-stage build.
+#
+# Goal: shrink the runtime image and run as a non-root user.
+# Replace the contents of `Dockerfile` with this once Lab 1 works,
+# then implement the TODOs.
+#
+# Compare image sizes before and after:
+#   docker images iris-api
+#   docker history iris-api:latest
+#
+# Target: drop from ~1.0 GB → ~250 MB.
+
+# ---------- Stage 1: builder ----------
+# TODO 1: Use python:3.12-slim as the base, name this stage `builder`.
+
+# TODO 2: Install build-essential ONLY in the builder (you don't want
+#         gcc in the runtime image). Clean up apt lists when done.
+
+# TODO 3: pip install --user so packages land in /root/.local — that
+#         folder will be copied into the runtime stage as a single layer.
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY app/ ./app/
+RUN python -m app.train
+
+
+# ---------- Stage 2: runtime ----------
+# TODO 4: Start a fresh stage from python:3.12-slim, named `runtime`.
+
+# TODO 5: Create a non-root user (`appuser`) and switch to it before CMD.
+
+# TODO 6: COPY --from=builder both the installed packages
+#         (/root/.local) and the trained model + app code.
+
+# TODO 7: Add a HEALTHCHECK that hits /health. docker compose will use
+#         it to gate the API behind a healthy state.
+
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
