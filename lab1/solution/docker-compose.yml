@@ -1,0 +1,49 @@
+# docker-compose.yml — defines the multi-container stack for the iris API.
+#
+# Usage:
+#   docker compose up --build       # build images and start
+#   docker compose up -d            # detached
+#   docker compose logs -f api      # tail one service
+#   docker compose down             # stop + remove containers (volumes survive)
+#   docker compose down -v          # also wipe the database volume
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: iris
+      POSTGRES_PASSWORD: iris_pw
+      POSTGRES_DB: iris
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iris -d iris"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # No host port published by default — only the API talks to the DB.
+    # Uncomment to inspect the DB from your host (psql -h localhost -p 5432 ...):
+    # ports:
+    #   - "5432:5432"
+
+  api:
+    build: .
+    image: iris-api:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://iris:iris_pw@db:5432/iris
+    ports:
+      - "8000:8000"
+    # During the lab we mount the local app/ folder so edits take effect on
+    # uvicorn reload. Comment out for a "production-like" run that uses only
+    # what was baked into the image.
+    # volumes:
+    #   - ./app:/app/app:ro
+    # command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+volumes:
+  db_data:
