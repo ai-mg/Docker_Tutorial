@@ -15,6 +15,17 @@ FROM python
 # TODO 2: Set a working directory. Without one, COPY lands in / and that's
 #         a mess.
 
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /build
+
+# Install build deps only in the builder layer.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 # TODO 3: We want pip to NOT cache wheels (smaller image) and Python to
 #         NOT write .pyc files (cleaner image). Set the right ENV vars.
 
